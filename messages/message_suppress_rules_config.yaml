@@ -6,5 +6,11 @@ message_suppress_rules:
     max_sends: 1
     period: calendar_day
 
+  - message: insufficient_funds
+    max_sends: 5
+    period: 24h
+
   - message: bank_account_ready
     max_sends: 1
+
+# maybe within_period
