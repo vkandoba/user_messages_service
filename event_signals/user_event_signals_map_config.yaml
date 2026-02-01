@@ -19,6 +19,5 @@ user_event_types:
       - name: payment_retry_exhausted
         condition: "properties.attempt_number >= 3"
 
-# TODO add failed attempts check
 # TODO: strong type
 
