@@ -15,10 +15,10 @@ user_event_types:
     default_signal: payment_failed
     cases:
       - signal: payment_failed_with_insufficient_funds
-        condition: "properties['failure_reason'] == 'INSUFFICIENT_FUNDS'"
+        condition: "properties.failure_reason == 'INSUFFICIENT_FUNDS'"
+      - name: payment_retry_exhausted
+        condition: "properties.attempt_number >= 3"
 
 # TODO add failed attempts check
-# TODO: split condition to field, op, value
-# TODO: handle list of conditions
 # TODO: strong type
 

@@ -1,10 +1,14 @@
 import hashlib
 import yaml
 from http.client import HTTPException
-from typing import List, Dict, Any, Optional
+from typing import List
 from datetime import datetime
 from fastapi import FastAPI
-from pydantic import BaseModel, EmailStr
+
+from UserEventTypes import UserEvent
+from event_signals.event_signal_service import EventSignalService
+from event_signals.user_event_to_signal_config import UserEventToSignalConfig
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -14,21 +18,6 @@ user_event_logs_db = {}
 
 
 user_events_config = {}
-
-
-class UserTraits(BaseModel):
-    email: EmailStr
-    country: str
-    marketing_opt_in: bool
-    risk_segment: Optional[str] = None
-
-
-class UserEvent(BaseModel):
-    user_id: str
-    event_type: str
-    event_timestamp: datetime
-    properties: Dict[str, Any]
-    user_traits: UserTraits
 
 
 class ProcessResult(BaseModel):
@@ -50,29 +39,13 @@ class AuditResponse(BaseModel):
     history: List[AuditLogEntry]
 
 
-def load_config():
-    global user_events_config
-    with open("user_events_config.yaml", "r") as config_file:
-        user_events_config = yaml.safe_load(config_file)
+def load_user_event_config(filepath: str) -> UserEventToSignalConfig:
+    with open(filepath, "r") as file:
+        raw_config = yaml.safe_load(file)
+    return UserEventToSignalConfig(**raw_config)
 
 
-def get_event_name(event: UserEvent) -> str:
-    event_config = user_events_config.get("user_events", {}).get(event.event_type, None)
-
-    if not event_config:
-        return event.event_type
-
-    for case in event_config.get("cases", []):
-        condition = case.get("condition")
-        try:
-            if eval(condition, {"user_traits": event.user_traits, "properties": event.properties}):
-                return case.get("name", event_config.get("default_name"))
-        except Exception:
-            # TODO: log error
-            continue
-
-    return event_config.get("default_name", event.event_type)
-
+event_signal_service = EventSignalService(load_user_event_config("event_signals/user_event_signals_map_config.yaml"))
 
 
 def get_idempotency_key(event: UserEvent) -> str:
@@ -118,6 +91,8 @@ def handle_event(event: UserEvent) -> ProcessResult:
     }
     user_event_logs_db[event.user_id].append(log_entry)
 
+    event_signal_service.GetEventSignal(event)
+
     return ProcessResult(
         user_id=event.user_id,
         event_type=event.event_type,
@@ -153,5 +128,5 @@ def get_user_audit_log(user_id: str):
 # TODO: use on_event
 @app.on_event("startup")
 def startup_event():
-    load_config()
-    print("Config loaded:", user_events_config)
+    # TODO: maybe use it
+    print("Config loaded:")

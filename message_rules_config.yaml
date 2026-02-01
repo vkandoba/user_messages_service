@@ -20,7 +20,7 @@ message_rules:
     channel: email
     reason: "Payment failed due to lack of funds"
 
-  - message: payment_retry_exhausted
+  - message: payment_retry_exhausted_alert
     on_signal: payment_retry_exhausted
     template: HIGH_RISK_ALERT
     channel: internal_alert
