@@ -1,7 +1,6 @@
-message_suppression_policies:
+message_suppress_rules:
   - message: welcome
     max_sends: 1
-    period: lifetime
 
   - message: insufficient_funds
     max_sends: 1
@@ -9,4 +8,3 @@ message_suppression_policies:
 
   - message: bank_account_ready
     max_sends: 1
-    period: lifetime
