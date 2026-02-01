@@ -1,27 +1,27 @@
-message_send_rules:
-  - message_name: welcome
-    on_event: signup_with_marketing
+message_rules:
+  - message: welcome
+    on_signal: signup_with_marketing
     template: WELCOME_EMAIL
     channel: email
     reason: "New user signed up and opted in for marketing"
 
-  - message_name: bank_account_ready
-    on_event: link_bank_success
-    requires_history:
-      - event: signup | signup_with_marketing
+  - message: bank_account_ready
+    on_signal: link_bank_success
+    requires_event_history:
+      - event_type: signup_completed
         within_period: 24h
     template: BANK_LINK_NUDGE_SMS
     channel: sms
     reason: "User linked bank within 24h of registration"
 
-  - message_name: insufficient_funds
-    on_event: payment_failed_with_insufficient_funds
+  - message: insufficient_funds
+    on_signal: payment_failed_with_insufficient_funds
     template: INSUFFICIENT_FUNDS_EMAIL
     channel: email
     reason: "Payment failed due to lack of funds"
 
-  - message_name: payment_retry_exhausted
-    on_event: payment_retry_exhausted
+  - message: payment_retry_exhausted
+    on_signal: payment_retry_exhausted
     template: HIGH_RISK_ALERT
     channel: internal_alert
     reason: "Third failed payment attempt detected"

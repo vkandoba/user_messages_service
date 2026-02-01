@@ -1,12 +1,12 @@
-suppression_policies:
-  - message_name: welcome
+message_suppression_policies:
+  - message: welcome
     max_sends: 1
     period: lifetime
 
-  - message_name: insufficient_funds
+  - message: insufficient_funds
     max_sends: 1
     period: calendar_day
 
-  - message_name: bank_account_ready
+  - message: bank_account_ready
     max_sends: 1
     period: lifetime

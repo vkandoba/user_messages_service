@@ -1,22 +1,24 @@
-user_events:
+user_event_types:
   signup_completed:
-    default_name: signup
+    default_signal: signup
     cases:
-      - name: signup_with_marketing
+      - signal: signup_with_marketing
         condition: "user_traits.marketing_opt_in == true"
 
   link_bank_success:
-    default_name: link_bank_success
+    default_signal: link_bank_success
 
   payment_initiated:
-    default_name: payment_initiated
+    default_signal: payment_initiated
 
   payment_failed:
-    default_name: payment_failed
+    default_signal: payment_failed
     cases:
-      - name: payment_failed_with_insufficient_funds
+      - signal: payment_failed_with_insufficient_funds
         condition: "properties['failure_reason'] == 'INSUFFICIENT_FUNDS'"
 
 # TODO add failed attempts check
 # TODO: split condition to field, op, value
 # TODO: handle list of conditions
+# TODO: strong type
+
