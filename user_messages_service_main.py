@@ -4,11 +4,12 @@ from http.client import HTTPException
 from typing import List
 from datetime import datetime
 from fastapi import FastAPI
+from pydantic import BaseModel
 
-from UserEventTypes import UserEvent
 from event_signals.event_signal_service import EventSignalService
 from event_signals.user_event_to_signal_config import UserEventToSignalConfig
-from pydantic import BaseModel
+from user_events.user_event_types import UserEvent
+
 
 app = FastAPI()
 

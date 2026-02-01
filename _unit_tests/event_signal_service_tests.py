@@ -2,7 +2,7 @@ import pytest
 
 from datetime import datetime
 
-from UserEventTypes import UserEvent, UserTraits
+from user_events.user_event_types import UserEvent, UserTraits
 from event_signals.event_signal_service import EventSignalService
 from event_signals.user_event_to_signal_config import UserEventToSignalConfig
 

@@ -1,13 +1,15 @@
 from pydantic import BaseModel
 from typing import Optional
 
-from UserEventTypes import UserEvent
+
 from event_signals.user_event_to_signal_config import UserEventToSignalConfig
+from user_events.user_event_types import UserEvent
 
 
 class EventSignal(BaseModel):
     name: str
     event_type: str
+
 
 class EventSignalService:
     def __init__(self, config: UserEventToSignalConfig):
