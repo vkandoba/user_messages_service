@@ -1,4 +1,5 @@
 import hashlib
+from http.client import HTTPException
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 from fastapi import FastAPI
@@ -7,7 +8,7 @@ from pydantic import BaseModel, EmailStr
 app = FastAPI()
 
 processed_events_db = set()
-event_logs_db = []
+user_event_logs_db = {}
 
 
 class UserTraits(BaseModel):
@@ -17,7 +18,7 @@ class UserTraits(BaseModel):
     risk_segment: Optional[str] = None
 
 
-class InboundEvent(BaseModel):
+class UserEvent(BaseModel):
     user_id: str
     event_type: str
     event_timestamp: datetime
@@ -32,15 +33,27 @@ class ProcessResult(BaseModel):
     reason: str
 
 
-def get_deduplication_key(event: InboundEvent) -> str:
+class AuditLogEntry(BaseModel):
+    timestamp: datetime
+    event_type: str
+    action: str
+    reason: str
+
+
+class AuditResponse(BaseModel):
+    user_id: str
+    history: List[AuditLogEntry]
+
+
+def get_idempotency_key(event: UserEvent) -> str:
     raw_data = f"{event.user_id}-{event.event_type}-{event.event_timestamp.isoformat()}"
     return hashlib.md5(raw_data.encode()).hexdigest()
 
 
-def process_single_event(event: InboundEvent) -> ProcessResult:
-    dedup_key = get_deduplication_key(event)
+def handle_event(event: UserEvent) -> ProcessResult:
+    idem_key = get_idempotency_key(event)
 
-    if dedup_key in processed_events_db:
+    if idem_key in processed_events_db:
         return ProcessResult(
             user_id=event.user_id,
             event_type=event.event_type,
@@ -48,16 +61,18 @@ def process_single_event(event: InboundEvent) -> ProcessResult:
             reason="duplicate_detected"
         )
 
-    processed_events_db.add(dedup_key)
+    processed_events_db.add(idem_key)
+
+    if event.user_id not in user_event_logs_db:
+        user_event_logs_db[event.user_id] = []
 
     if not event.user_traits.marketing_opt_in:
         log_entry = {
-            "user_id": event.user_id,
             "action": "skipped",
             "reason": "user_opted_out",
             "timestamp": datetime.now()
         }
-        event_logs_db.append(log_entry)
+        user_event_logs_db[event.user_id].append(log_entry)
 
         return ProcessResult(
             user_id=event.user_id,
@@ -67,12 +82,11 @@ def process_single_event(event: InboundEvent) -> ProcessResult:
         )
 
     log_entry = {
-        "user_id": event.user_id,
         "action": "sent",
         "reason": "criteria_met",
         "timestamp": datetime.now()
     }
-    event_logs_db.append(log_entry)
+    user_event_logs_db[event.user_id].append(log_entry)
 
     return ProcessResult(
         user_id=event.user_id,
@@ -83,14 +97,25 @@ def process_single_event(event: InboundEvent) -> ProcessResult:
 
 
 @app.post("/api/v1/event", response_model=ProcessResult)
-def ingest_single_event(event: InboundEvent):
-    return process_single_event(event)
+def ingest_single_event(event: UserEvent):
+    return handle_event(event)
 
 
 @app.post("/api/v1/events", response_model=List[ProcessResult])
-def ingest_batch_events(events: List[InboundEvent]):
+def ingest_batch_events(events: List[UserEvent]):
     results = []
     for event in events:
-        result = process_single_event(event)
+        result = handle_event(event)
         results.append(result)
     return results
+
+
+@app.get("/audit/{user_id}", response_model=AuditResponse)
+def get_user_audit_log(user_id: str):
+    if user_id not in user_event_logs_db:
+        raise HTTPException(status_code=404, detail="User history not found")
+
+    return AuditResponse(
+        user_id=user_id,
+        history=user_event_logs_db[user_id]
+    )
