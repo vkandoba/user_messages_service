@@ -1,0 +1,141 @@
+import pytest
+
+from datetime import datetime
+
+from UserEventTypes import UserEvent, UserTraits
+from event_signals.event_signal_service import EventSignalService
+from event_signals.user_event_to_signal_config import UserEventToSignalConfig
+
+
+@pytest.fixture
+def config_fixture():
+    return UserEventToSignalConfig(
+        user_event_types={
+            "signup_completed": {
+                "default_signal": "signup",
+                "cases": [
+                    {
+                        "signal": "signup_with_marketing",
+                        "condition": "user_traits.marketing_opt_in == True"
+                    }
+                ]
+            },
+            "payment_failed": {
+                "default_signal": "payment_failed",
+                "cases": [
+                    {
+                        "signal": "payment_failed_with_insufficient_funds",
+                        "condition": "properties.failure_reason == 'INSUFFICIENT_FUNDS'"
+                    }
+                ]
+            }
+        }
+    )
+
+
+@pytest.fixture
+def event_fixture_signup():
+    return UserEvent(
+        user_id="user_1",
+        event_type="signup_completed",
+        event_timestamp=datetime.now(),
+        properties={},
+        user_traits=UserTraits(
+            email="test@example.com",
+            country="US",
+            marketing_opt_in=True
+        )
+    )
+
+
+@pytest.fixture
+def event_fixture_payment_failed_with_funds():
+    return UserEvent(
+        user_id="user_2",
+        event_type="payment_failed",
+        event_timestamp=datetime.now(),
+        properties={"failure_reason": "INSUFFICIENT_FUNDS"},
+        user_traits=UserTraits(
+            email="user2@example.com",
+            country="UK",
+            marketing_opt_in=False
+        )
+    )
+
+
+@pytest.fixture
+def event_fixture_payment_failed_other_reason():
+    return UserEvent(
+        user_id="user_3",
+        event_type="payment_failed",
+        event_timestamp=datetime.now(),
+        properties={"failure_reason": "CARD_EXPIRED"},
+        user_traits=UserTraits(
+            email="user3@example.com",
+            country="CA",
+            marketing_opt_in=True
+        )
+    )
+
+
+def test_get_event_signal_with_signup_marketing(config_fixture, event_fixture_signup):
+    service = EventSignalService(config=config_fixture)
+
+    signal = service.GetEventSignal(event_fixture_signup)
+
+    assert signal.name == "signup_with_marketing"
+
+
+def test_payment_failed_insufficient_funds(config_fixture, event_fixture_payment_failed_with_funds):
+    service = EventSignalService(config=config_fixture)
+
+    signal = service.GetEventSignal(event_fixture_payment_failed_with_funds)
+
+    assert signal.name == "payment_failed_with_insufficient_funds"
+
+
+def test_payment_failed_other_reason(config_fixture, event_fixture_payment_failed_other_reason):
+    service = EventSignalService(config=config_fixture)
+
+    signal = service.GetEventSignal(event_fixture_payment_failed_other_reason)
+
+    assert signal.name == "payment_failed"
+
+
+def test_unknown_event_type(config_fixture):
+    service = EventSignalService(config=config_fixture)
+    event = UserEvent(
+        user_id="user_unknown",
+        event_type="unknown_event",
+        event_timestamp=datetime.now(),
+        properties={},
+        user_traits=UserTraits(
+            email="unknown@example.com",
+            country="US",
+            marketing_opt_in=True
+        )
+    )
+
+    signal = service.GetEventSignal(event)
+
+    assert signal is None
+
+
+def test_eval_error_handling(config_fixture):
+    service = EventSignalService(config=config_fixture)
+    event = UserEvent(
+        user_id="user_invalid_condition",
+        event_type="signup_completed",
+        event_timestamp=datetime.now(),
+        properties={},
+        user_traits=UserTraits(
+            email="invalid@example.com",
+            country="US",
+            marketing_opt_in=True
+        )
+    )
+
+    config_fixture.user_event_types["signup_completed"]["cases"][0]["condition"] = "invalid_condition_value"
+    signal = service.GetEventSignal(event)
+
+    assert signal.name == "signup"

@@ -16,3 +16,5 @@ class UserEvent(BaseModel):
     event_timestamp: datetime
     properties: Dict[str, Any]
     user_traits: UserTraits
+
+# TODO: add properties to UserEvent for payment_failed
