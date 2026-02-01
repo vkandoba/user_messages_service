@@ -1,0 +1,18 @@
+user_events:
+  signup_completed:
+    default_name: signup
+    cases:
+      - name: signup_with_marketing
+        condition: "user_traits.marketing_opt_in == true"
+
+  link_bank_success:
+    default_name: link_bank_success
+
+  payment_initiated:
+    default_name: payment_initiated
+
+  payment_failed:
+    default_name: payment_failed
+    cases:
+      - name: payment_failed_with_insufficient_funds
+        condition: "properties.failure_reason == 'INSUFFICIENT_FUNDS'"

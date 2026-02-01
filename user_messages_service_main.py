@@ -1,4 +1,5 @@
 import hashlib
+import yaml
 from http.client import HTTPException
 from typing import List, Dict, Any, Optional
 from datetime import datetime
@@ -7,8 +8,12 @@ from pydantic import BaseModel, EmailStr
 
 app = FastAPI()
 
+
 processed_events_db = set()
 user_event_logs_db = {}
+
+
+user_events_config = {}
 
 
 class UserTraits(BaseModel):
@@ -43,6 +48,31 @@ class AuditLogEntry(BaseModel):
 class AuditResponse(BaseModel):
     user_id: str
     history: List[AuditLogEntry]
+
+
+def load_config():
+    global user_events_config
+    with open("user_events_config.yaml", "r") as config_file:
+        user_events_config = yaml.safe_load(config_file)
+
+
+def get_event_name(event: UserEvent) -> str:
+    event_config = user_events_config.get("user_events", {}).get(event.event_type, None)
+
+    if not event_config:
+        return event.event_type
+
+    for case in event_config.get("cases", []):
+        condition = case.get("condition")
+        try:
+            if eval(condition, {"user_traits": event.user_traits, "properties": event.properties}):
+                return case.get("name", event_config.get("default_name"))
+        except Exception:
+            # TODO: log error
+            continue
+
+    return event_config.get("default_name", event.event_type)
+
 
 
 def get_idempotency_key(event: UserEvent) -> str:
@@ -119,3 +149,9 @@ def get_user_audit_log(user_id: str):
         user_id=user_id,
         history=user_event_logs_db[user_id]
     )
+
+# TODO: use on_event
+@app.on_event("startup")
+def startup_event():
+    load_config()
+    print("Config loaded:", user_events_config)
