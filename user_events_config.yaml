@@ -15,4 +15,8 @@ user_events:
     default_name: payment_failed
     cases:
       - name: payment_failed_with_insufficient_funds
-        condition: "properties.failure_reason == 'INSUFFICIENT_FUNDS'"
+        condition: "properties['failure_reason'] == 'INSUFFICIENT_FUNDS'"
+
+# TODO add failed attempts check
+# TODO: split condition to field, op, value
+# TODO: handle list of conditions
