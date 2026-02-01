@@ -50,7 +50,7 @@ event_signal_service = EventSignalService(load_user_event_config("event_signals/
 
 
 def get_idempotency_key(event: UserEvent) -> str:
-    raw_data = f"{event.user_id}-{event.event_type}-{event.event_timestamp.isoformat()}"
+    raw_data = f"{event.user_id}-{event.type}-{event.timestamp.isoformat()}"
     return hashlib.md5(raw_data.encode()).hexdigest()
 
 
@@ -60,7 +60,7 @@ def handle_event(event: UserEvent) -> ProcessResult:
     if idem_key in processed_events_db:
         return ProcessResult(
             user_id=event.user_id,
-            event_type=event.event_type,
+            event_type=event.type,
             status="skipped",
             reason="duplicate_detected"
         )
@@ -80,7 +80,7 @@ def handle_event(event: UserEvent) -> ProcessResult:
 
         return ProcessResult(
             user_id=event.user_id,
-            event_type=event.event_type,
+            event_type=event.type,
             status="skipped",
             reason="user_opted_out"
         )
@@ -96,7 +96,7 @@ def handle_event(event: UserEvent) -> ProcessResult:
 
     return ProcessResult(
         user_id=event.user_id,
-        event_type=event.event_type,
+        event_type=event.type,
         status="success",
         reason="message_triggered"
     )

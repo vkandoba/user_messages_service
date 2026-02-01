@@ -7,7 +7,7 @@ message_rules:
 
   - message: bank_account_ready
     on_signal: link_bank_success
-    requires_event_history:
+    requires_before:
       - event_type: signup_completed
         within_period: 24h
     template: BANK_LINK_NUDGE_SMS

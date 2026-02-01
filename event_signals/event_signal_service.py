@@ -16,7 +16,7 @@ class EventSignalService:
         self.config = config
 
     def GetEventSignal(self, event: UserEvent) -> Optional[EventSignal]:
-        event_type_config = self.config.user_event_types.get(event.event_type)
+        event_type_config = self.config.user_event_types.get(event.type)
         if not event_type_config:
             # TODO: log exception
             return None
@@ -25,9 +25,9 @@ class EventSignalService:
             for case in event_type_config.cases:
                 try:
                     if eval(case.condition, {"user_traits": event.user_traits, "properties": event.properties}):
-                        return EventSignal(name=case.signal, event_type=event.event_type)
+                        return EventSignal(name=case.signal, event_type=event.type)
                 except Exception:
                     # TODO: log exception
                     continue
 
-        return EventSignal(name=event_type_config.default_signal, event_type=event.event_type)
+        return EventSignal(name=event_type_config.default_signal, event_type=event.type)

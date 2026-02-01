@@ -12,8 +12,8 @@ class UserTraits(BaseModel):
 
 class UserEvent(BaseModel):
     user_id: str
-    event_type: str
-    event_timestamp: datetime
+    type: str
+    timestamp: datetime
     properties: Dict[str, Any]
     user_traits: UserTraits
 
