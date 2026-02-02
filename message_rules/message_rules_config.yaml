@@ -16,6 +16,9 @@ message_rules:
 
   - message: insufficient_funds
     on_signal: payment_failed_with_insufficient_funds
+    has_limit:
+      - max: 1
+        within_period: calendar_day
     template: INSUFFICIENT_FUNDS_EMAIL
     channel: email
     reason: "Payment failed due to lack of funds"

@@ -3,10 +3,6 @@ message_suppress_rules:
     max_sends: 1
 
   - message: insufficient_funds
-    max_sends: 1
-    period: calendar_day
-
-  - message: insufficient_funds
     max_sends: 5
     period: 24h
 
