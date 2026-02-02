@@ -37,8 +37,8 @@ def config_fixture():
 def event_fixture_signup():
     return UserEvent(
         user_id="user_1",
-        event_type="signup_completed",
-        event_timestamp=datetime.now(),
+        type="signup_completed",
+        timestamp=datetime.now(),
         properties={},
         user_traits=UserTraits(
             email="test@example.com",
@@ -52,9 +52,9 @@ def event_fixture_signup():
 def event_fixture_payment_failed_with_funds():
     return UserEvent(
         user_id="user_2",
-        event_type="payment_failed",
-        event_timestamp=datetime.now(),
-        properties={"failure_reason": "INSUFFICIENT_FUNDS"},
+        type="payment_failed",
+        timestamp=datetime.now(),
+        properties={"amount": 10, "attempt_number": 1, "failure_reason": "INSUFFICIENT_FUNDS"},
         user_traits=UserTraits(
             email="user2@example.com",
             country="UK",
@@ -67,9 +67,9 @@ def event_fixture_payment_failed_with_funds():
 def event_fixture_payment_failed_other_reason():
     return UserEvent(
         user_id="user_3",
-        event_type="payment_failed",
-        event_timestamp=datetime.now(),
-        properties={"failure_reason": "CARD_EXPIRED"},
+        type="payment_failed",
+        timestamp=datetime.now(),
+        properties={"amount": 10, "attempt_number": 1, "failure_reason": "CARD_EXPIRED"},
         user_traits=UserTraits(
             email="user3@example.com",
             country="CA",
@@ -106,8 +106,8 @@ def test_unknown_event_type(config_fixture):
     service = EventSignalService(config=config_fixture)
     event = UserEvent(
         user_id="user_unknown",
-        event_type="unknown_event",
-        event_timestamp=datetime.now(),
+        type="unknown_event",
+        timestamp=datetime.now(),
         properties={},
         user_traits=UserTraits(
             email="unknown@example.com",
@@ -125,8 +125,8 @@ def test_eval_error_handling(config_fixture):
     service = EventSignalService(config=config_fixture)
     event = UserEvent(
         user_id="user_invalid_condition",
-        event_type="signup_completed",
-        event_timestamp=datetime.now(),
+        type="signup_completed",
+        timestamp=datetime.now(),
         properties={},
         user_traits=UserTraits(
             email="invalid@example.com",
@@ -135,7 +135,7 @@ def test_eval_error_handling(config_fixture):
         )
     )
 
-    config_fixture.user_event_types["signup_completed"]["cases"][0]["condition"] = "invalid_condition_value"
+    config_fixture.user_event_types["signup_completed"].cases[0].condition = "invalid_condition_value"
     signal = service.GetEventSignal(event)
 
     assert signal.name == "signup"

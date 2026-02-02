@@ -1,6 +1,6 @@
 from datetime import datetime
-from typing import Dict, Any, Optional
-from pydantic import BaseModel, EmailStr
+from typing import Optional, Dict, Any
+from pydantic import BaseModel, EmailStr, model_validator, ValidationError
 
 
 class UserTraits(BaseModel):
@@ -10,11 +10,25 @@ class UserTraits(BaseModel):
     risk_segment: Optional[str] = None
 
 
+class PaymentFailedProperties(BaseModel):
+    amount: float
+    attempt_number: int
+    failure_reason: str
+
+
 class UserEvent(BaseModel):
     user_id: str
     type: str
     timestamp: datetime
-    properties: Dict[str, Any]
+    properties: Optional[PaymentFailedProperties] | Dict[str, Any]
     user_traits: UserTraits
 
-# TODO: add properties to UserEvent for payment_failed
+    @model_validator(mode="after")
+    def validate_event(self):
+        if self.type == "payment_failed":
+            if not isinstance(self.properties, PaymentFailedProperties):
+                try:
+                    self.properties = PaymentFailedProperties(**self.properties)
+                except (TypeError, ValidationError) as e:
+                    raise ValueError(f"Invalid properties for 'payment_failed': {e}")
+        return self
