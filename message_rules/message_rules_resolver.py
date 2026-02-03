@@ -1,7 +1,7 @@
 from typing import List
 from datetime import datetime, timedelta
 
-from event_signals.event_signal_service import EventSignal
+from event_signals.event_signal_service import UserEventWithSignal
 from message_rules.message_rules_config import MessageRulesConfig, RequiresBefore, Period, HasLimit
 from message_send_requests.message_send_request_repository import MessageSendRequestRepositoryBase
 from user_events.user_event_repository import UserEventRepositoryBase
@@ -17,7 +17,7 @@ class MessageRulesResolver:
         self.user_event_repository = user_event_repository
         self.sent_messages_repository = sent_messages_repository
 
-    def apply_rules(self, user_id: str, event_signal: EventSignal) -> List[dict]:
+    def apply_rules(self, user_id: str, event_signal: UserEventWithSignal) -> List[dict]:
         resolved_messages = []
 
         for rule in self.config.message_rules:

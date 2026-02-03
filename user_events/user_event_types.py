@@ -15,11 +15,12 @@ class PaymentFailedProperties(BaseModel):
     attempt_number: int
     failure_reason: str
 
-
-class UserEvent(BaseModel):
+class UserEventBase(BaseModel):
     user_id: str
     type: str
     timestamp: datetime
+
+class IncomingUserEvent(UserEventBase):
     properties: Optional[PaymentFailedProperties] | Dict[str, Any]
     user_traits: UserTraits
 

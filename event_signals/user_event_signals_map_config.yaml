@@ -18,6 +18,3 @@ user_event_types:
         condition: "properties.failure_reason == 'INSUFFICIENT_FUNDS'"
       - name: payment_retry_exhausted
         condition: "properties.attempt_number >= 3"
-
-# TODO: strong type
-

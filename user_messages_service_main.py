@@ -92,7 +92,7 @@ def handle_event(event: UserEvent) -> ProcessResult:
     }
     user_event_logs_db[event.user_id].append(log_entry)
 
-    event_signal_service.GetEventSignal(event)
+    event_signal_service.get_event_with_signal(event)
 
     return ProcessResult(
         user_id=event.user_id,

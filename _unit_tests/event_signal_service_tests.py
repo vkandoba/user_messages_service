@@ -1,8 +1,7 @@
 import pytest
-
 from datetime import datetime
 
-from user_events.user_event_types import UserEvent, UserTraits
+from user_events.user_event_types import IncomingUserEvent, UserTraits, PaymentFailedProperties
 from event_signals.event_signal_service import EventSignalService
 from event_signals.user_event_to_signal_config import UserEventToSignalConfig
 
@@ -35,7 +34,7 @@ def config_fixture():
 
 @pytest.fixture
 def event_fixture_signup():
-    return UserEvent(
+    return IncomingUserEvent(
         user_id="user_1",
         type="signup_completed",
         timestamp=datetime.now(),
@@ -50,11 +49,15 @@ def event_fixture_signup():
 
 @pytest.fixture
 def event_fixture_payment_failed_with_funds():
-    return UserEvent(
+    return IncomingUserEvent(
         user_id="user_2",
         type="payment_failed",
         timestamp=datetime.now(),
-        properties={"amount": 10, "attempt_number": 1, "failure_reason": "INSUFFICIENT_FUNDS"},
+        properties=PaymentFailedProperties(
+            amount=10,
+            attempt_number=1,
+            failure_reason="INSUFFICIENT_FUNDS"
+        ),
         user_traits=UserTraits(
             email="user2@example.com",
             country="UK",
@@ -65,11 +68,15 @@ def event_fixture_payment_failed_with_funds():
 
 @pytest.fixture
 def event_fixture_payment_failed_other_reason():
-    return UserEvent(
+    return IncomingUserEvent(
         user_id="user_3",
         type="payment_failed",
         timestamp=datetime.now(),
-        properties={"amount": 10, "attempt_number": 1, "failure_reason": "CARD_EXPIRED"},
+        properties=PaymentFailedProperties(
+            amount=10,
+            attempt_number=1,
+            failure_reason="CARD_EXPIRED"
+        ),
         user_traits=UserTraits(
             email="user3@example.com",
             country="CA",
@@ -81,30 +88,30 @@ def event_fixture_payment_failed_other_reason():
 def test_get_event_signal_with_signup_marketing(config_fixture, event_fixture_signup):
     service = EventSignalService(config=config_fixture)
 
-    signal = service.GetEventSignal(event_fixture_signup)
+    signal = service.get_event_with_signal(event_fixture_signup)
 
-    assert signal.name == "signup_with_marketing"
+    assert signal.signal == "signup_with_marketing"
 
 
 def test_payment_failed_insufficient_funds(config_fixture, event_fixture_payment_failed_with_funds):
     service = EventSignalService(config=config_fixture)
 
-    signal = service.GetEventSignal(event_fixture_payment_failed_with_funds)
+    signal = service.get_event_with_signal(event_fixture_payment_failed_with_funds)
 
-    assert signal.name == "payment_failed_with_insufficient_funds"
+    assert signal.signal == "payment_failed_with_insufficient_funds"
 
 
 def test_payment_failed_other_reason(config_fixture, event_fixture_payment_failed_other_reason):
     service = EventSignalService(config=config_fixture)
 
-    signal = service.GetEventSignal(event_fixture_payment_failed_other_reason)
+    signal = service.get_event_with_signal(event_fixture_payment_failed_other_reason)
 
-    assert signal.name == "payment_failed"
+    assert signal.signal == "payment_failed"
 
 
 def test_unknown_event_type(config_fixture):
     service = EventSignalService(config=config_fixture)
-    event = UserEvent(
+    event = IncomingUserEvent(
         user_id="user_unknown",
         type="unknown_event",
         timestamp=datetime.now(),
@@ -116,26 +123,14 @@ def test_unknown_event_type(config_fixture):
         )
     )
 
-    signal = service.GetEventSignal(event)
+    with pytest.raises(ValueError):
+        service.get_event_with_signal(event)
 
-    assert signal is None
 
-
-def test_eval_error_handling(config_fixture):
+def test_eval_error_handling(config_fixture, event_fixture_signup):
     service = EventSignalService(config=config_fixture)
-    event = UserEvent(
-        user_id="user_invalid_condition",
-        type="signup_completed",
-        timestamp=datetime.now(),
-        properties={},
-        user_traits=UserTraits(
-            email="invalid@example.com",
-            country="US",
-            marketing_opt_in=True
-        )
-    )
 
     config_fixture.user_event_types["signup_completed"].cases[0].condition = "invalid_condition_value"
-    signal = service.GetEventSignal(event)
 
-    assert signal.name == "signup"
+    with pytest.raises(RuntimeError):
+        service.get_event_with_signal(event_fixture_signup)
