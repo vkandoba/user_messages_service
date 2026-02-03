@@ -11,7 +11,11 @@ class MessageSendRequestRepositoryBase(ABC):
         pass
 
     @abstractmethod
-    def get_recent(self, user_id: str, max_timestamp: datetime, n: int) -> List[MessageSendRequest]:
+    def get_messages(self,
+                   user_id: str,
+                   period_from: datetime,
+                   period_to: datetime
+    ) -> List[MessageSendRequest]:
         pass
 
 
@@ -24,17 +28,16 @@ class MessageSendRequestInMemoryRepository(MessageSendRequestRepositoryBase):
             self._data[request.message.user_id] = []
         self._data[request.message.user_id].append(request)
 
-    def get_recent(self,
+    def get_messages(self,
                    user_id: str,
-                   max_timestamp: datetime,
-                   n: int) -> List[MessageSendRequest]:
+                   period_from: datetime,
+                   period_to: datetime
+    ) -> List[MessageSendRequest]:
         user_requests = self._data.get(user_id, [])
-        recent_requests = []
+        reversed_messages = []
 
         for request in reversed(user_requests):
-            if request.timestamp < max_timestamp:
-                recent_requests.append(request)
-                if len(recent_requests) == n:
-                    break
+            if period_from < request.timestamp < period_to:
+                reversed_messages.append(request)
 
-        return recent_requests[::-1]
+        return reversed_messages[::-1]

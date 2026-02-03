@@ -13,9 +13,8 @@ class SuppressDecision(str):
 
 
 class MessageSuppressService:
-    def __init__(self, config: MessageSuppressRulesConfig, repository: MessageSendRequestRepositoryBase):
+    def __init__(self, config: MessageSuppressRulesConfig):
         self.config = config
-        self.repository = repository
 
     def _get_rules_for_message(self, message_name: str) -> list[SuppressRule]:
         rules = []

@@ -1,5 +1,6 @@
 import asyncio
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import List, Dict
 
 
@@ -16,6 +17,9 @@ class UserEventRepositoryBase(ABC):
     def get_recent(self, user_id: str, n: int) -> List[UserEvent]:
         pass
 
+    @abstractmethod
+    def get_user_events(self, user_id: str, period_from: datetime, period_to: datetime) -> List[UserEvent]:
+        pass
 
 class UserEventInMemoryRepository(UserEventRepositoryBase):
     def __init__(self):
@@ -30,3 +34,17 @@ class UserEventInMemoryRepository(UserEventRepositoryBase):
 
     def get_recent(self, user_id: str, n: int) -> List[UserEvent]:
         return self._data.get(user_id, [])[-n:]
+
+    def get_user_events(self,
+                     user_id: str,
+                     period_from: datetime,
+                     period_to: datetime
+    ) -> List[UserEvent]:
+        user_events = self._data.get(user_id, [])
+        reversed_events = []
+
+        for request in reversed(user_events):
+            if period_from < request.timestamp < period_to:
+                reversed_events.append(request)
+
+        return reversed_events[::-1]

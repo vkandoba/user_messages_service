@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 from typing import Optional
 
@@ -9,6 +11,7 @@ from user_events.user_event_types import UserEvent
 class EventSignal(BaseModel):
     name: str
     event_type: str
+    timestamp: datetime
 
 
 class EventSignalService:
@@ -30,4 +33,4 @@ class EventSignalService:
                     # TODO: log exception
                     continue
 
-        return EventSignal(name=event_type_config.default_signal, event_type=event.type)
+        return EventSignal(name=event_type_config.default_signal, event_type=event.type, timestamp=event.timestamp)
