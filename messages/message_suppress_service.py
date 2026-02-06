@@ -2,11 +2,11 @@
 from typing import Optional
 from pydantic import BaseModel
 
-from config_utils import get_period_from
-from user_events.event_signal_service import UserEventWithSignal
-from message_types import Message
+from configs.config_utils import get_period_from
+from user_message_types import Message
 from message_send_requests.message_send_request_repository import MessageSendRequestRepositoryBase
 from messages.message_suppress_rules_config import MessageSuppressRulesConfig, SuppressRule
+from user_events.user_event_service import UserEventWithSignal
 
 
 class SuppressDecision(BaseModel):

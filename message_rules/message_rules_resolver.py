@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from config_utils import get_period_from
+from configs.config_utils import get_period_from
 from message_rules.message_rules_config import MessageRulesConfig, RequiresBefore, HasLimit
 from message_send_requests.message_send_request_repository import MessageSendRequestRepositoryBase
 from messages.message_types import Message

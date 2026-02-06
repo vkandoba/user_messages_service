@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, List
 
-from config_utils import Period
+from configs.config_utils import Period
 
 
 class SuppressRule(BaseModel):

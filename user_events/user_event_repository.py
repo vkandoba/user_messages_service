@@ -6,7 +6,7 @@ from typing import List, Dict
 from user_event_types import IncomingUserEvent
 
 
-# TODO: should be async-based
+# TODO: should be async-based and thread-safe
 class IncomingUserEventRepositoryBase(ABC):
     @abstractmethod
     def save(self, event: IncomingUserEvent) -> None:
@@ -27,10 +27,9 @@ class IncomingUserEventInMemoryRepository(IncomingUserEventRepositoryBase):
         self._lock = asyncio.Lock()
 
     def save(self, event: IncomingUserEvent) -> None:
-        async with self._lock:
-            if event.user_id not in self._data:
-                self._data[event.user_id] = []
-            self._data[event.user_id].append(event)
+        if event.user_id not in self._data:
+            self._data[event.user_id] = []
+        self._data[event.user_id].append(event)
 
     def get_recent(self, user_id: str, n: int) -> list[IncomingUserEvent]:
         return self._data.get(user_id, [])[-n:]
