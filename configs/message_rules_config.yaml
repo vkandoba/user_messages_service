@@ -7,8 +7,9 @@ message_rules:
 
   - message: bank_account_ready
     on_signal: link_bank_success
-    requires_before:
-      - event_type: signup_completed
+    prerequisites:
+      - type: requires_before
+        event_type: signup_completed
         within_period: 24h
     template: BANK_LINK_NUDGE_SMS
     channel: sms
@@ -16,8 +17,9 @@ message_rules:
 
   - message: insufficient_funds
     on_signal: payment_failed_with_insufficient_funds
-    has_limit:
-      - max: 1
+    prerequisites:
+      - type: has_limit
+        max: 1
         within_period: calendar_day
     template: INSUFFICIENT_FUNDS_EMAIL
     channel: email

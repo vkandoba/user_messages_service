@@ -7,7 +7,7 @@ from configs.config_utils import Period
 class SuppressRule(BaseModel):
     message: str
     max_sends: int
-    within_period: Optional[Period]
+    within_period: Optional[Period] = None
 
 class MessageSuppressRulesConfig(BaseModel):
     message_suppress_rules: List[SuppressRule]

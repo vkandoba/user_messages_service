@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime
 
 from user_event_types import IncomingUserEvent, UserTraits, PaymentFailedProperties
-from user_events.event_signal_service import UserEventService
+from user_events.user_event_service import UserEventService
 from user_events.user_event_to_signal_config import UserEventToSignalConfig
 
 
