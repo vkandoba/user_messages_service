@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from enum import Enum
+import yaml
 
 
 class Period(str, Enum):
@@ -14,3 +15,8 @@ def get_period_from(period: Period, period_to: datetime) -> datetime:
         return period_to - timedelta(hours=24)
     else:
         raise ValueError("Unsupported period type")
+
+
+def load_yaml_config(file_path):
+    with open(file_path, 'r') as file:
+        return yaml.safe_load(file)

@@ -1,23 +1,14 @@
-import yaml
-from fastapi import FastAPI
-from pydantic import BaseModel
-
+from configs.config_utils import load_yaml_config
 from user_events.user_event_to_signal_config import UserEventToSignalConfig
 from messages.message_suppress_rules_config import MessageSuppressRulesConfig
 from message_rules.message_rules_config import MessageRulesConfig
 from messages.message_suppress_service import MessageSuppressService
 from user_events.user_event_service import UserEventService
 from message_rules.message_rules_resolver import MessageRulesResolver
-from message_send_requests.message_sender import MessageSenderStub
+from message_send_requests.message_sender import FakeMessageSender
 from user_events.user_event_repository import IncomingUserEventInMemoryRepository
 from message_send_requests.message_send_request_repository import MessageSendRequestInMemoryRepository
-from user_message_service_impl import UserMessageService
-from user_event_types import IncomingUserEvent
-
-
-def load_yaml_config(file_path):
-    with open(file_path, 'r') as file:
-        return yaml.safe_load(file)
+from user_message_service import UserMessageService
 
 
 message_rules_config_yaml = load_yaml_config("configs/message_rules_config.yaml")
@@ -38,7 +29,7 @@ message_rules_resolver = MessageRulesResolver(
     user_event_repository=user_event_repo,
     sent_messages_repository=message_request_repo
 )
-message_sender = MessageSenderStub()
+message_sender = FakeMessageSender()
 
 user_message_service = UserMessageService(
     event_signal_service=event_signal_service,
@@ -48,19 +39,3 @@ user_message_service = UserMessageService(
     message_request_repo=message_request_repo,
     message_sender=message_sender
 )
-
-app = FastAPI()
-
-
-class ProcessResult(BaseModel):
-    success: bool
-    message: str
-
-
-@app.post("/api/v1/event", response_model=ProcessResult)
-async def ingest_event(event: IncomingUserEvent):
-    try:
-        user_message_service.ingest_event(event)
-        return True
-    except Exception as e:
-        return False

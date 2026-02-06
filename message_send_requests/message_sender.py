@@ -9,6 +9,6 @@ class MessageSender(ABC):
         pass
 
 
-class MessageSenderStub(MessageSender):
+class FakeMessageSender(MessageSender):
     def send(self, request: MessageSendRequest):
         print(f"Send message ...")
