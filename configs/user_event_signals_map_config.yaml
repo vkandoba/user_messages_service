@@ -16,5 +16,5 @@ user_event_types:
     cases:
       - signal: payment_failed_with_insufficient_funds
         condition: "properties.failure_reason == 'INSUFFICIENT_FUNDS'"
-      - name: payment_retry_exhausted
+      - signal: payment_retry_exhausted
         condition: "properties.attempt_number >= 3"
