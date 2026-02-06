@@ -9,7 +9,6 @@ class UserTraits(BaseModel):
     marketing_opt_in: bool
     risk_segment: Optional[str] = None
 
-
 class PaymentFailedProperties(BaseModel):
     amount: float
     attempt_number: int

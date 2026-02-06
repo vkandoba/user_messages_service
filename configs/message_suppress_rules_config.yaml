@@ -4,9 +4,7 @@ message_suppress_rules:
 
   - message: insufficient_funds
     max_sends: 5
-    period: 24h
+    within_period: 24h
 
   - message: bank_account_ready
     max_sends: 1
-
-# maybe within_period

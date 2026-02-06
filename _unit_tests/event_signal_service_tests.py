@@ -1,9 +1,9 @@
 import pytest
 from datetime import datetime
 
-from user_events.user_event_types import IncomingUserEvent, UserTraits, PaymentFailedProperties
-from event_signals.event_signal_service import EventSignalService
-from event_signals.user_event_to_signal_config import UserEventToSignalConfig
+from user_event_types import IncomingUserEvent, UserTraits, PaymentFailedProperties
+from user_events.event_signal_service import UserEventService
+from user_events.user_event_to_signal_config import UserEventToSignalConfig
 
 
 @pytest.fixture
@@ -86,7 +86,7 @@ def event_fixture_payment_failed_other_reason():
 
 
 def test_get_event_signal_with_signup_marketing(config_fixture, event_fixture_signup):
-    service = EventSignalService(config=config_fixture)
+    service = UserEventService(config=config_fixture)
 
     signal = service.get_event_with_signal(event_fixture_signup)
 
@@ -94,7 +94,7 @@ def test_get_event_signal_with_signup_marketing(config_fixture, event_fixture_si
 
 
 def test_payment_failed_insufficient_funds(config_fixture, event_fixture_payment_failed_with_funds):
-    service = EventSignalService(config=config_fixture)
+    service = UserEventService(config=config_fixture)
 
     signal = service.get_event_with_signal(event_fixture_payment_failed_with_funds)
 
@@ -102,7 +102,7 @@ def test_payment_failed_insufficient_funds(config_fixture, event_fixture_payment
 
 
 def test_payment_failed_other_reason(config_fixture, event_fixture_payment_failed_other_reason):
-    service = EventSignalService(config=config_fixture)
+    service = UserEventService(config=config_fixture)
 
     signal = service.get_event_with_signal(event_fixture_payment_failed_other_reason)
 
@@ -110,7 +110,7 @@ def test_payment_failed_other_reason(config_fixture, event_fixture_payment_faile
 
 
 def test_unknown_event_type(config_fixture):
-    service = EventSignalService(config=config_fixture)
+    service = UserEventService(config=config_fixture)
     event = IncomingUserEvent(
         user_id="user_unknown",
         type="unknown_event",
@@ -128,7 +128,7 @@ def test_unknown_event_type(config_fixture):
 
 
 def test_eval_error_handling(config_fixture, event_fixture_signup):
-    service = EventSignalService(config=config_fixture)
+    service = UserEventService(config=config_fixture)
 
     config_fixture.user_event_types["signup_completed"].cases[0].condition = "invalid_condition_value"
 

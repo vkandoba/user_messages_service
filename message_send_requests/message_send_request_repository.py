@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Dict
 
-from message_send_requests.message_send_request_types import MessageSendRequest
+from messages.message_types import MessageSendRequest
 
 
 class MessageSendRequestRepositoryBase(ABC):
@@ -11,11 +11,15 @@ class MessageSendRequestRepositoryBase(ABC):
         pass
 
     @abstractmethod
-    def get_messages(self,
+    def get_messages_by_period(self,
                    user_id: str,
                    period_from: datetime,
                    period_to: datetime
     ) -> List[MessageSendRequest]:
+        pass
+
+    @abstractmethod
+    def get_messages_by_name(self, user_id: str, message_name: str) -> List[MessageSendRequest]:
         pass
 
 
@@ -28,16 +32,26 @@ class MessageSendRequestInMemoryRepository(MessageSendRequestRepositoryBase):
             self._data[request.message.user_id] = []
         self._data[request.message.user_id].append(request)
 
-    def get_messages(self,
+    def get_messages_by_period(self,
                    user_id: str,
                    period_from: datetime,
                    period_to: datetime
     ) -> List[MessageSendRequest]:
-        user_requests = self._data.get(user_id, [])
+        user_messages = self._data.get(user_id, [])
         reversed_messages = []
 
-        for request in reversed(user_requests):
+        for request in reversed(user_messages):
             if period_from < request.timestamp < period_to:
                 reversed_messages.append(request)
+
+        return reversed_messages[::-1]
+
+    def get_messages_by_name(self, user_id: str, message_name: str) -> List[MessageSendRequest]:
+        user_messages = self._data.get(user_id, [])
+        reversed_messages = []
+
+        for m in reversed(user_messages):
+            if m.message == message_name:
+                reversed_messages.append(m)
 
         return reversed_messages[::-1]

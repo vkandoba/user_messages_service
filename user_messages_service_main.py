@@ -6,9 +6,8 @@ from datetime import datetime
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from event_signals.event_signal_service import EventSignalService
-from event_signals.user_event_to_signal_config import UserEventToSignalConfig
-from user_events.user_event_types import UserEvent
+from user_events.event_signal_service import UserEventService
+from user_events.user_event_to_signal_config import UserEventToSignalConfig
 
 
 app = FastAPI()
@@ -46,7 +45,7 @@ def load_user_event_config(filepath: str) -> UserEventToSignalConfig:
     return UserEventToSignalConfig(**raw_config)
 
 
-event_signal_service = EventSignalService(load_user_event_config("event_signals/user_event_signals_map_config.yaml"))
+event_signal_service = UserEventService(load_user_event_config("configs/user_event_signals_map_config.yaml"))
 
 
 def get_idempotency_key(event: UserEvent) -> str:

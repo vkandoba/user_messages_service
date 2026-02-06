@@ -1,0 +1,43 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.venv/
+venv/
+ENV/
+env/
+bin/
+lib/
+share/
+
+# PyCharm / JetBrains
+.idea/
+*.iml
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.spec
+
+# Testing and coverage
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+htmlcov/
+.cache/
+
+# Data and logs
+*.log
+*.sqlite
+*.csv
+*.jsonl
+data/
+temp/
+
+# System files
+.DS_Store
+Thumbs.db

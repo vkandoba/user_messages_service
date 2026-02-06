@@ -1,20 +1,27 @@
 # message_suppress/message_suppress_service.py
-from datetime import datetime
 from typing import Optional
+from pydantic import BaseModel
 
+from config_utils import get_period_from
+from user_events.event_signal_service import UserEventWithSignal
 from message_types import Message
 from message_send_requests.message_send_request_repository import MessageSendRequestRepositoryBase
 from messages.message_suppress_rules_config import MessageSuppressRulesConfig, SuppressRule
 
 
-class SuppressDecision(str):
-    SUPPRESS = "Suppress"
-    SEND = "Send"
+class SuppressDecision(BaseModel):
+    is_need_supress: bool
+    suppress_reason: Optional[str]
 
 
 class MessageSuppressService:
-    def __init__(self, config: MessageSuppressRulesConfig):
+    def __init__(
+            self,
+            config: MessageSuppressRulesConfig,
+            repo: MessageSendRequestRepositoryBase
+    ):
         self.config = config
+        self.repo = repo
 
     def _get_rules_for_message(self, message_name: str) -> list[SuppressRule]:
         rules = []
@@ -24,27 +31,21 @@ class MessageSuppressService:
 
         return rules
 
-    def should_suppress(self, message: Message) -> tuple[SuppressDecision, Optional[str]]:
+    def should_suppress(self, event: UserEventWithSignal, message: Message) -> SuppressDecision:
         rules = self._get_rules_for_message(message.template)
         if not rules:
-            return SuppressDecision.SEND, None
+            return SuppressDecision(is_need_supress=False, suppress_reason=None)
 
-        max_timestamp = datetime.now()
         for rule in rules:
-            # TODO: get boundaries and check it
-            if rule.period == "calendar_day":
-                max_timestamp = datetime.combine(max_timestamp.date(), datetime.min.time())
+            if rule.within_period:
+                period_from = get_period_from(rule.within_period, event.timestamp)
+                messages = self.repo.get_messages_by_period(event.user_id, period_from, event.timestamp)
+            else:
+                messages = self.repo.get_messages_by_name(event.user_id, message.name)
 
-            recent_requests = self.repository.get_recent(
-                user_id=message.user_id,
-                max_timestamp=max_timestamp,
-                n=rule.max_sends + 1
-            )
+            messages_count = len([m for m in messages if m.message.name == message.name])
 
-            if len(recent_requests) >= rule.max_sends:
-                suppress_reason = (f"Message '{message.template}' has been sent {len(recent_requests)} times,"
-                                   f"last time TODO within {rule.period}"
-                                   f"exceeding limit of {rule.max_sends}.")
-                return SuppressDecision.SUPPRESS, suppress_reason
+            if messages_count >= rule.max_sends:
+                return SuppressDecision(is_need_supress=True, reason="FORMAT REASON TODO")
 
-        return SuppressDecision.SEND, None
+        return SuppressDecision(is_need_supress=False, suppress_reason=None)

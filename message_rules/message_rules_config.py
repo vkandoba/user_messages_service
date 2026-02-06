@@ -1,12 +1,8 @@
-from enum import Enum
-
 from pydantic import BaseModel
-from typing import List, Optional, Union
+from typing import List, Optional
 
+from config_utils import Period
 
-class Period(str, Enum):
-    CALENDAR_DAY = "calendar_day"
-    DAY = "24h"
 
 class RequiresBefore(BaseModel):
     event_type: str

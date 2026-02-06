@@ -1,17 +1,15 @@
-from typing import Optional
-
-from event_signals.user_event_to_signal_config import UserEventToSignalConfig
-from user_events.user_event_types import UserEventBase, IncomingUserEvent
+from user_events.user_event_to_signal_config import UserEventToSignalConfig
+from user_event_types import UserEventBase, IncomingUserEvent
 
 
 class UserEventWithSignal(UserEventBase):
     signal: str
 
-class EventSignalService:
+class UserEventService:
     def __init__(self, config: UserEventToSignalConfig):
         self.config = config
 
-    def get_event_with_signal(self, event: IncomingUserEvent) -> Optional[UserEventWithSignal]:
+    def get_event_with_signal(self, event: IncomingUserEvent) -> UserEventWithSignal:
         event_type_config = self.config.user_event_types.get(event.type)
         if not event_type_config:
             raise ValueError("TODO")
