@@ -23,7 +23,7 @@ class RequiresBeforePrerequisite(MessageRulePrerequisite):
         self.within_period = within_period
         self.user_event_repository = user_event_repository
 
-    def check(self, user_id: str, period_to: datetime, event_type: str) -> bool:
+    def check(self, user_id: str, period_to: datetime, event_type: str, **kwargs) -> bool:
         period_from = get_period_from(self.within_period, period_to)
         period_events = self.user_event_repository.get_user_events(user_id, period_from, period_to)
         return any(event.type == event_type for event in period_events)
@@ -35,7 +35,7 @@ class HasLimitPrerequisite(MessageRulePrerequisite):
         self.within_period = within_period
         self.sent_messages_repository = sent_messages_repository
 
-    def check(self, user_id: str, period_to: datetime, message_name: str) -> bool:
+    def check(self, user_id: str, period_to: datetime, message_name: str, **kwargs) -> bool:
         period_from = get_period_from(self.within_period, period_to)
         period_messages = self.sent_messages_repository.get_messages_by_period(user_id, period_from, period_to)
         messages_with_type = [msg for msg in period_messages if msg.message == message_name]
