@@ -21,5 +21,5 @@ async def get_audit_log(user_id: str):
 
     return {
         "recent_events": recent_events,
-        "messages": messages
+        "message_requests": messages
     }

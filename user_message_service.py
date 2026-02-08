@@ -1,8 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from messages_suppress.message_types import MessageSendRequest, MessageSendRequestStatus
 from user_event_types import IncomingUserEvent
-from user_message_types import UserAudit
 
 
 class UserMessageService:
@@ -35,7 +34,7 @@ class UserMessageService:
                 request_status = MessageSendRequestStatus.SUPPRESSED
 
             message_request = MessageSendRequest(
-                timestamp=datetime.now(), # TODO: add utc tz
+                timestamp=datetime.now(timezone.utc),
                 message=message,
                 status=request_status,
                 suppress_reason=suppress_reason
