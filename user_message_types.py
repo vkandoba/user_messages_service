@@ -1,8 +1,10 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel
+
+from user_event_types import IncomingUserEvent
 
 
 class Channel(str, Enum):
@@ -26,3 +28,7 @@ class MessageSendRequest(BaseModel):
     message: Message
     status: MessageSendRequestStatus
     suppress_reason: Optional[str]
+
+class UserAudit(BaseModel):
+    recent_events: List[IncomingUserEvent]
+    messages: List[MessageSendRequest]

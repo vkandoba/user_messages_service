@@ -22,6 +22,10 @@ class MessageSendRequestRepositoryBase(ABC):
     def get_messages_by_name(self, user_id: str, message_name: str) -> List[MessageSendRequest]:
         pass
 
+    @abstractmethod
+    def get_messages_by_user(self, user_id: str) -> List[MessageSendRequest]:
+        pass
+
 
 class MessageSendRequestInMemoryRepository(MessageSendRequestRepositoryBase):
     def __init__(self):
@@ -55,3 +59,6 @@ class MessageSendRequestInMemoryRepository(MessageSendRequestRepositoryBase):
                 reversed_messages.append(m)
 
         return reversed_messages[::-1]
+
+    def get_messages_by_user(self, user_id: str) -> List[MessageSendRequest]:
+        return self._data.get(user_id, [])[::-1]

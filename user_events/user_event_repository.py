@@ -20,6 +20,9 @@ class IncomingUserEventRepositoryBase(ABC):
     def get_user_events(self, user_id: str, period_from: datetime, period_to: datetime) -> list[IncomingUserEvent]:
         pass
 
+    @abstractmethod
+    def get_recent(self, user_id: str, n: int) -> list[IncomingUserEvent]:
+        pass
 
 class IncomingUserEventInMemoryRepository(IncomingUserEventRepositoryBase):
     def __init__(self):

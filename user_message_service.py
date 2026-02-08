@@ -1,7 +1,8 @@
 from datetime import datetime
-from pyexpat.errors import messages
 
 from messages_suppress.message_types import MessageSendRequest, MessageSendRequestStatus
+from user_event_types import IncomingUserEvent
+from user_message_types import UserAudit
 
 
 class UserMessageService:
@@ -21,7 +22,7 @@ class UserMessageService:
         self._user_event_repo = user_event_repo
         self._message_sender = message_sender
 
-    def ingest_event(self, user_event: "IncomingUserEvent") -> None:
+    def ingest_event(self, user_event: IncomingUserEvent) -> None:
         self._user_event_repo.save(user_event)
         event_with_signal = self._event_signal_service.get_event_with_signal(user_event)
 
@@ -34,7 +35,7 @@ class UserMessageService:
                 request_status = MessageSendRequestStatus.SUPPRESSED
 
             message_request = MessageSendRequest(
-                timestamp=datetime.now(),
+                timestamp=datetime.now(), # TODO: add utc tz
                 message=message,
                 status=request_status,
                 suppress_reason=suppress_reason
@@ -42,3 +43,8 @@ class UserMessageService:
             self._message_request_repo.save(message_request)
             if message_request.status == MessageSendRequestStatus.SENT:
                 self._message_sender.send(message_request)
+
+    def get_audit(self, user_id: str, events_count: int) -> tuple[list[IncomingUserEvent], list[MessageSendRequest]]:
+        recent_events = self._user_event_repo.get_recent(user_id, events_count)
+        messages = self._message_request_repo.get_messages_by_user(user_id)
+        return recent_events, messages
