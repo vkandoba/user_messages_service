@@ -35,7 +35,7 @@ class UserMessageService:
 
             message_request = MessageSendRequest(
                 timestamp=datetime.now(),
-                message=messages,
+                message=message,
                 status=request_status,
                 suppress_reason=suppress_reason
             )

@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import Optional, Dict, Any
-from pydantic import BaseModel, EmailStr, model_validator, ValidationError
+from pydantic import BaseModel, Field, EmailStr, model_validator, ValidationError
 
 
 class UserTraits(BaseModel):
-    email: EmailStr
-    country: str
-    marketing_opt_in: bool
+    email: Optional[EmailStr] = None
+    country: Optional[str] = None
+    marketing_opt_in: Optional[bool] = None
     risk_segment: Optional[str] = None
 
 class PaymentFailedProperties(BaseModel):
@@ -16,12 +16,12 @@ class PaymentFailedProperties(BaseModel):
 
 class UserEventBase(BaseModel):
     user_id: str
-    type: str
-    timestamp: datetime
+    type: str = Field(alias="event_type")
+    timestamp: datetime = Field(alias="event_timestamp")
 
 class IncomingUserEvent(UserEventBase):
+    user_traits: Optional[UserTraits]
     properties: Optional[PaymentFailedProperties] | Dict[str, Any]
-    user_traits: UserTraits
 
     @model_validator(mode="after")
     def validate_event(self):

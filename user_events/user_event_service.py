@@ -18,8 +18,13 @@ class UserEventService:
             for case in event_type_config.cases:
                 try:
                     if eval(case.condition, {"user_traits": event.user_traits, "properties": event.properties}):
-                        return UserEventWithSignal(signal=case.signal, **event.model_dump())
-                except Exception:
+                        return UserEventWithSignal(
+                            signal=case.signal,
+                            user_id=event.user_id,
+                            event_type=event.type,
+                            event_timestamp=event.timestamp,
+                        )
+                except Exception as e:
                     raise RuntimeError("TODO")
 
         return UserEventWithSignal(signal=event_type_config.default_signal, **event.model_dump())
