@@ -1,7 +1,7 @@
 from datetime import datetime
 from pyexpat.errors import messages
 
-from messages.message_types import MessageSendRequest, MessageSendRequestStatus
+from messages_suppress.message_types import MessageSendRequest, MessageSendRequestStatus
 
 
 class UserMessageService:
@@ -29,15 +29,15 @@ class UserMessageService:
 
         for message in resolved_messages:
             request_status = MessageSendRequestStatus.SENT
-            suppress_decision = self._message_suppress_service.should_suppress(user_event, message)
-            if suppress_decision.is_need_supress:
+            should_suppress, suppress_reason = self._message_suppress_service.should_suppress(user_event, message)
+            if should_suppress:
                 request_status = MessageSendRequestStatus.SUPPRESSED
 
             message_request = MessageSendRequest(
                 timestamp=datetime.now(),
                 message=messages,
                 status=request_status,
-                suppress_reason=suppress_decision.suppress_reason
+                suppress_reason=suppress_reason
             )
             self._message_request_repo.save(message_request)
             if message_request.status == MessageSendRequestStatus.SENT:

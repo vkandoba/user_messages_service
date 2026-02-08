@@ -1,7 +1,7 @@
 from message_rules.message_rules_config import MessageRulesConfig, RequiresBefore, HasLimit, Prerequisite
 from message_rules.message_rules_prerequisite import MessageRulePrerequisiteFactory
 from message_send_requests.message_send_request_repository import MessageSendRequestRepositoryBase
-from messages.message_types import Message
+from messages_suppress.message_types import Message
 from user_events.user_event_repository import IncomingUserEventRepositoryBase
 from user_events.user_event_service import UserEventWithSignal
 

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from messages.message_types import MessageSendRequest
+from messages_suppress.message_types import MessageSendRequest
 
 
 class MessageSender(ABC):

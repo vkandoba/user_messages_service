@@ -1,17 +1,8 @@
-# message_suppress/message_suppress_service.py
-from typing import Optional
-from pydantic import BaseModel
-
 from configs.config_utils import get_period_from
 from user_message_types import Message
 from message_send_requests.message_send_request_repository import MessageSendRequestRepositoryBase
-from messages.message_suppress_rules_config import MessageSuppressRulesConfig, SuppressRule
+from messages_suppress.message_suppress_rules_config import MessageSuppressRulesConfig, SuppressRule
 from user_events.user_event_service import UserEventWithSignal
-
-
-class SuppressDecision(BaseModel):
-    is_need_supress: bool
-    suppress_reason: Optional[str]
 
 
 class MessageSuppressService:
@@ -31,21 +22,21 @@ class MessageSuppressService:
 
         return rules
 
-    def should_suppress(self, event: UserEventWithSignal, message: Message) -> SuppressDecision:
+    def should_suppress(self, event: UserEventWithSignal, message: Message) -> tuple[bool, str | None]:
         rules = self._get_rules_for_message(message.template)
         if not rules:
-            return SuppressDecision(is_need_supress=False, suppress_reason=None)
+            return False, None
 
         for rule in rules:
             if rule.within_period:
                 period_from = get_period_from(rule.within_period, event.timestamp)
-                messages = self.repo.get_messages_by_period(event.user_id, period_from, event.timestamp)
+                messages = self.repo.get_messages_by_period(message.user_id, period_from, event.timestamp)
             else:
-                messages = self.repo.get_messages_by_name(event.user_id, message.name)
+                messages = self.repo.get_messages_by_name(message.user_id, message.name)
 
             messages_count = len([m for m in messages if m.message.name == message.name])
 
             if messages_count >= rule.max_sends:
-                return SuppressDecision(is_need_supress=True, reason="FORMAT REASON TODO")
+                return True, "FORMAT REASON TODO"
 
-        return SuppressDecision(is_need_supress=False, suppress_reason=None)
+        return False, None

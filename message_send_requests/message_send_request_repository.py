@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Dict
 
-from messages.message_types import MessageSendRequest
+from messages_suppress.message_types import MessageSendRequest
 
 
 class MessageSendRequestRepositoryBase(ABC):
