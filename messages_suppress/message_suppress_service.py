@@ -25,7 +25,7 @@ class MessageSuppressService:
         return rules
 
     def should_suppress(self, event: UserEventWithSignal, message: Message) -> tuple[bool, str | None]:
-        rules = self._get_rules_for_message(message.template)
+        rules = self._get_rules_for_message(message.name)
         if not rules:
             return False, None
 
@@ -42,7 +42,7 @@ class MessageSuppressService:
             messages_count = len([m for m in messages if m.message.name == message.name])
 
             if messages_count >= rule.max_sends:
-                reason = f"Message {message.name} already sent more than {messages_count} times{suppress_reason_suffix}"
+                reason = f"Message {message.name} already sent {rule.max_sends} times{suppress_reason_suffix}"
                 return True, reason
 
         return False, None
