@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 import yaml
@@ -14,7 +15,8 @@ def get_period_from(period: Period, period_to: datetime) -> datetime:
     elif period == Period.DAY:
         return period_to - timedelta(hours=24)
     else:
-        raise ValueError("Unsupported period type")
+        logging.error(f"The within option {period} not implemented")
+        raise ValueError(f"Unsupported within period: {period}")
 
 
 def load_yaml_config(file_path):
