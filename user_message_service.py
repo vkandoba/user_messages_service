@@ -21,10 +21,11 @@ class UserMessageService:
         self._user_event_repo = user_event_repo
         self._message_sender = message_sender
 
-    def ingest_event(self, user_event: IncomingUserEvent) -> None:
+    def ingest_event(self, user_event: IncomingUserEvent) -> list[MessageSendRequest]:
         self._user_event_repo.save(user_event)
         events_with_signal = self._event_signal_service.get_event_with_signals(user_event)
 
+        message_send_requests: list[MessageSendRequest] = []
         for event_with_signal in events_with_signal:
             resolved_messages = self._message_rules_resolver.apply_rules(event_with_signal)
 
@@ -43,6 +44,9 @@ class UserMessageService:
                 self._message_request_repo.save(message_request)
                 if message_request.status == MessageSendRequestStatus.SENT:
                     self._message_sender.send(message_request)
+                message_send_requests.append(message_request)
+
+        return message_send_requests
 
     def get_audit(self, user_id: str, events_count: int) -> tuple[list[IncomingUserEvent], list[MessageSendRequest]]:
         recent_events = self._user_event_repo.get_recent(user_id, events_count)

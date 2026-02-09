@@ -66,7 +66,19 @@ curl -X POST http://localhost:8000/api/v1/event \
 **Response example**
 ```bash
 200 OK
-{}
+[
+    {
+        "message": {
+            "channel": "email",
+            "name": "insufficient_funds",
+            "reason": "Payment failed due to lack of funds",
+            "template": "INSUFFICIENT_FUNDS_EMAIL",
+            "user_id": "u_12345"
+        },
+        "status": "sent",
+        "timestamp": "2026-02-09T20:44:31.428696Z"
+    }
+]
 ```
 
 ### Get User Audit Log
