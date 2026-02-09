@@ -118,3 +118,21 @@ curl -X GET http://localhost:8000/api/v1/u_12345/audit \
 	]
 }
 ```
+
+## Assumptions
+
+- Events arrive in order according to their timestamps; there are no events from the future
+
+- The service does not receive the same event more than once. Also, at a given point in time, a user cannot have multiple events of the same type
+(`user_id` | `event_type` | `event_timestamp` can be treated as a potential idempotency key)
+
+- There is no need to validate event order from the user journey perspective
+  (For example, a `link_bank_success` event has to come after `signup_completed`, and a `payment_initiated` event may not happen before it)
+
+- Each event has the same set of top-level fields, including `properties` and `user_traits`s
+
+- The `properties` field has a stable contract for `event_type == payment_failed' with `amount, `attemp_number` and `failer_reason`
+
+- The attempt_number field is correctly
+
+- The configs is maintained by internal users
