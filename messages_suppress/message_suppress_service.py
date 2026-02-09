@@ -31,12 +31,15 @@ class MessageSuppressService:
             if rule.within_period:
                 period_from = get_period_from(rule.within_period, event.timestamp)
                 messages = self.repo.get_messages_by_period(message.user_id, period_from, event.timestamp)
+                suppress_reason_suffix = f" within period from {period_from} to {event.timestamp}"
             else:
                 messages = self.repo.get_messages_by_name(message.user_id, message.name)
+                suppress_reason_suffix = ""
 
             messages_count = len([m for m in messages if m.message.name == message.name])
 
             if messages_count >= rule.max_sends:
-                return True, "FORMAT REASON TODO"
+                reason = f"Message {message.name} already sent more than {messages_count} times{suppress_reason_suffix}"
+                return True, reason
 
         return False, None
