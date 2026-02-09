@@ -55,7 +55,7 @@ class MessageSendRequestInMemoryRepository(MessageSendRequestRepositoryBase):
         reversed_messages = []
 
         for m in reversed(user_messages):
-            if m.message == message_name:
+            if m.message.name == message_name:
                 reversed_messages.append(m)
 
         return reversed_messages[::-1]

@@ -5,6 +5,11 @@ from user_message_service_main import app, user_message_service
 client = TestClient(app)
 
 
+def process_response(messages):
+    [m.pop("timestamp") for m in messages]
+    return messages
+
+
 def test_ingest_payment_failed_event():
     payment_failed_event = {
         "user_id": "u_12345",
@@ -25,10 +30,7 @@ def test_ingest_payment_failed_event():
 
     response = client.post("/api/v1/event", json=payment_failed_event)
     assert response.status_code == 200
-    messages = response.json()
-    [m.pop("timestamp") for m in messages]
-    print(messages)
-    assert messages == [
+    assert process_response(response.json()) == [
     {
         "message": {
             "channel": "email",
@@ -55,7 +57,7 @@ def test_ingest_payment_failed_event():
 
 
 def test_signup_completed():
-    payment_failed_event = {
+    signup_completed_event = {
         "user_id": "u_12345",
         "event_type": "signup_completed",
         "event_timestamp": "2025-10-31T19:22:11Z",
@@ -66,12 +68,13 @@ def test_signup_completed():
         }
     }
 
-    response = client.post("/api/v1/event", json=payment_failed_event)
-    assert response.status_code == 200
-    messages = response.json()
+    response1 = client.post("/api/v1/event", json=signup_completed_event)
+    response2 = client.post("/api/v1/event", json=signup_completed_event)
+    assert response1.status_code == 200
+    messages = response1.json()
     [m.pop("timestamp") for m in messages]
     print(messages)
-    assert messages == [
+    assert process_response(response1.json()) ==  [
         {
             'message': {
                 'channel': 'email',
@@ -81,5 +84,17 @@ def test_signup_completed():
                 'user_id': 'u_12345'},
             'status': 'sent',
             'suppress_reason': None
+        }
+    ]
+    assert process_response(response2.json()) ==  [
+        {
+            'message': {
+                'channel': 'email',
+                'name': 'welcome',
+                'reason': 'New user signed up and opted in for marketing',
+                'template': 'WELCOME_EMAIL',
+                'user_id': 'u_12345'},
+            'status': 'suppressed',
+            'suppress_reason': "Message welcome already sent 1 times"
         }
     ]
