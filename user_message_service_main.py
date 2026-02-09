@@ -17,6 +17,7 @@ app = FastAPI()
 async def ingest_event(event: IncomingUserEvent):
     logging.info(f"Received new event {event.type} for user {event.user_id} on {event.timestamp}")
     user_message_service.ingest_event(event)
+    return {}
 
 
 @app.get("/api/v1/{user_id}/audit")

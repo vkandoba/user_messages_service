@@ -65,7 +65,8 @@ curl -X POST http://localhost:8000/api/v1/event \
 
 **Response example**
 ```bash
-null
+200 OK
+{}
 ```
 
 ### Get User Audit Log
@@ -83,6 +84,7 @@ curl -X GET http://localhost:8000/api/v1/u_12345/audit \
 
 **Response example**
 ```bash
+200 OK
 {
 	"recent_events": [
 		{
