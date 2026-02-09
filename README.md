@@ -154,3 +154,21 @@ curl -X GET http://localhost:8000/api/v1/u_12345/audit \
 - The configs is maintained by internal users
 
 - New messages arrive with a delay, so there is no need to worry about thread safety at the first version 
+
+## Design and File Structure
+
+### configs/*.yaml
+
+`.yaml` files that define the rules used by the service to transform incoming user events and decide whether a message should be sent
+
+### user_events/user_event_service.py
+
+Responsible for processing incoming user events and produce triggers that can result in sending a message
+
+### message_rules/message_rules_resolver.py
+
+Evaluates message rules and checks all required conditions
+
+### message_suppress/message_suppress_service.py
+
+Applies suppression logic to prevent excessive message delivery
