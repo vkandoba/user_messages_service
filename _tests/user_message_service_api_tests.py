@@ -10,7 +10,7 @@ def process_response(messages):
     return messages
 
 
-def test_ingest_payment_failed_event():
+def test_payment_failed_event():
     payment_failed_event = {
         "user_id": "u_12345",
         "event_type": "payment_failed",
@@ -71,9 +71,6 @@ def test_signup_completed():
     response1 = client.post("/api/v1/event", json=signup_completed_event)
     response2 = client.post("/api/v1/event", json=signup_completed_event)
     assert response1.status_code == 200
-    messages = response1.json()
-    [m.pop("timestamp") for m in messages]
-    print(messages)
     assert process_response(response1.json()) ==  [
         {
             'message': {
@@ -86,6 +83,7 @@ def test_signup_completed():
             'suppress_reason': None
         }
     ]
+    assert response2.status_code == 200
     assert process_response(response2.json()) ==  [
         {
             'message': {
@@ -98,3 +96,59 @@ def test_signup_completed():
             'suppress_reason': "Message welcome already sent 1 times"
         }
     ]
+
+
+def test_link_bank_success():
+    signup_completed_event = {
+        "user_id": "u_12345",
+        "event_type": "signup_completed",
+        "event_timestamp": "2025-10-31T19:22:11Z",
+        "properties": {
+        },
+        "user_traits": {
+        }
+    }
+    link_bank_success_event = {
+        "user_id": "u_12345",
+        "event_type": "link_bank_success",
+        "event_timestamp": "2025-11-01T10:22:11Z",
+        "properties": {
+        },
+        "user_traits": {
+        }
+    }
+
+    client.post("/api/v1/event", json=signup_completed_event)
+    response1 = client.post("/api/v1/event", json=link_bank_success_event)
+    response2 = client.post("/api/v1/event", json=link_bank_success_event)
+    link_bank_success_event["event_timestamp"] = "2025-11-02T10:22:11Z"
+    response3 = client.post("/api/v1/event", json=link_bank_success_event)
+
+    assert response1.status_code == 200
+    assert process_response(response1.json()) ==  [
+        {
+            'message': {
+                'channel': 'sms',
+                'name': 'bank_account_ready',
+                'reason': 'User linked bank within 24h of registration',
+                'template': 'BANK_LINK_NUDGE_SMS',
+                'user_id': 'u_12345'},
+            'status': 'sent',
+            'suppress_reason': None
+        }
+    ]
+    assert response2.status_code == 200
+    assert process_response(response2.json()) ==  [
+        {
+            'message': {
+                'channel': 'sms',
+                'name': 'bank_account_ready',
+                'reason': 'User linked bank within 24h of registration',
+                'template': 'BANK_LINK_NUDGE_SMS',
+                'user_id': 'u_12345'},
+            'status': 'suppressed',
+            'suppress_reason': "Message bank_account_ready already sent 1 times"
+        }
+    ]
+    assert response3.status_code == 200
+    assert response3.json() ==  []

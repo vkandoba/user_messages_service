@@ -18,16 +18,18 @@ class MessageRulePrerequisite(ABC):
 class RequiresBeforePrerequisite(MessageRulePrerequisite):
     def __init__(
             self,
+            event_type: str,
             within_period: Optional[Period],
             user_event_repository: IncomingUserEventRepositoryBase
     ):
+        self.event_type = event_type
         self.within_period = within_period
         self.user_event_repository = user_event_repository
 
     def check(self, message: str, user_event: UserEventWithSignal) -> bool:
         period_from = get_period_from(self.within_period, user_event.timestamp)
         period_events = self.user_event_repository.get_user_events(user_event.user_id, period_from, user_event.timestamp)
-        return any(event.type == user_event.type for event in period_events)
+        return any(event.type == self.event_type for event in period_events)
 
 
 class HasLimitPrerequisite(MessageRulePrerequisite):
@@ -55,6 +57,7 @@ class MessageRulePrerequisiteFactory:
     def create(self, prerequisite_config: Prerequisite) -> MessageRulePrerequisite:
         if isinstance(prerequisite_config, RequiresBefore):
             return RequiresBeforePrerequisite(
+                event_type=prerequisite_config.event_type,
                 within_period=prerequisite_config.within_period,
                 user_event_repository=self.user_event_repository
             )

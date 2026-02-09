@@ -26,6 +26,7 @@ class MessageRulesResolver:
             if rule.on_signal == event_with_signal.signal:
                 if not self._check_prerequisites(rule.message, event_with_signal, rule.prerequisites):
                     logging.info(f"Skipping {rule.message} because the event doesn't meet the pre-conditions")
+                    continue
 
                 message_to_send = Message(
                     user_id=event_with_signal.user_id,
