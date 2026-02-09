@@ -129,6 +129,8 @@ curl -X GET http://localhost:8000/api/v1/u_12345/audit \
 - There is no need to validate event order from the user journey perspective
   (For example, a `link_bank_success` event has to come after `signup_completed`, and a `payment_initiated` event may not happen before it)
 
+- A single event can trigger sending more than one message
+
 - Each event has the same set of top-level fields, including `properties` and `user_traits`s
 
 - The `properties` field has a stable contract for `event_type == payment_failed' with `amount, `attemp_number` and `failer_reason`
