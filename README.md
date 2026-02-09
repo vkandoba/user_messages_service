@@ -1,6 +1,6 @@
 # User Message Service
 
-Service for handling user events and managing communication logic.
+Service for handling user events and managing messages sending.
 
 ## How to Run
 
