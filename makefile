@@ -9,3 +9,7 @@ run:
 .PHONY: run-dev
 run-dev:
 	uvicorn $(APP_FILE):app --host $(HOST) --port $(PORT) --reload
+
+.PHONY: run-dev
+install:
+	pip install -r requirements.txt

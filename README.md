@@ -8,7 +8,7 @@ Service for handling user events and managing messages sending.
 
 **Using Pip:**
 ```bash
-TODO
+pip install -r requirements.txt
 ```
 
 **Using Make:**
