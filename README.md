@@ -140,3 +140,5 @@ curl -X GET http://localhost:8000/api/v1/u_12345/audit \
 - The attempt_number field is correctly
 
 - The configs is maintained by internal users
+
+- New messages arrive with a delay, so there is no need to worry about thread safety at the first version 
