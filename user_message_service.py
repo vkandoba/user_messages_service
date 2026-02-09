@@ -34,7 +34,7 @@ class UserMessageService:
                 request_status = MessageSendRequestStatus.SUPPRESSED
 
             message_request = MessageSendRequest(
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(tz=timezone.utc),
                 message=message,
                 status=request_status,
                 suppress_reason=suppress_reason

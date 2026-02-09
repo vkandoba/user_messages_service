@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 import yaml
 
@@ -10,7 +10,7 @@ class Period(str, Enum):
 
 def get_period_from(period: Period, period_to: datetime) -> datetime:
     if period == Period.CALENDAR_DAY:
-        return datetime.combine(period_to.date(), datetime.min.time())
+        return datetime.combine(period_to.date(), datetime.min.time(), tzinfo=timezone.utc)
     elif period == Period.DAY:
         return period_to - timedelta(hours=24)
     else:

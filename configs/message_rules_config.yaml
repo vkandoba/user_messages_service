@@ -29,4 +29,4 @@ message_rules:
     on_signal: payment_retry_exhausted
     template: HIGH_RISK_ALERT
     channel: internal_alert
-    reason: "Third failed payment attempt detected"
+    reason: "At least third failed payment attempt detected"
