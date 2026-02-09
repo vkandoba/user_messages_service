@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 import yaml
@@ -20,5 +21,6 @@ def get_period_from(period: Period, period_to: datetime) -> datetime:
 
 
 def load_yaml_config(file_path):
-    with open(file_path, 'r') as file:
-        return yaml.safe_load(file)
+    config_file = Path(__file__).parent.parent / file_path
+    config_content = config_file.read_text()
+    return yaml.safe_load(config_content)
