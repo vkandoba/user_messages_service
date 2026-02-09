@@ -6,11 +6,12 @@ from configs.config_utils import Period, get_period_from
 from message_rules.message_rules_config import Prerequisite, RequiresBefore, HasLimit
 from message_send_requests.message_send_request_repository import MessageSendRequestRepositoryBase
 from user_events.user_event_repository import IncomingUserEventRepositoryBase
+from user_events.user_event_service import UserEventWithSignal
 
 
 class MessageRulePrerequisite(ABC):
     @abstractmethod
-    def check(self, user_id: str, timestamp: datetime, **kwargs) -> bool:
+    def check(self, message: str, user_event: UserEventWithSignal) -> bool:
         pass
 
 
@@ -23,10 +24,10 @@ class RequiresBeforePrerequisite(MessageRulePrerequisite):
         self.within_period = within_period
         self.user_event_repository = user_event_repository
 
-    def check(self, user_id: str, period_to: datetime, event_type: str, **kwargs) -> bool:
-        period_from = get_period_from(self.within_period, period_to)
-        period_events = self.user_event_repository.get_user_events(user_id, period_from, period_to)
-        return any(event.type == event_type for event in period_events)
+    def check(self, message: str, user_event: UserEventWithSignal) -> bool:
+        period_from = get_period_from(self.within_period, user_event.timestamp)
+        period_events = self.user_event_repository.get_user_events(user_event.user_id, period_from, user_event.timestamp)
+        return any(event.type == user_event.type for event in period_events)
 
 
 class HasLimitPrerequisite(MessageRulePrerequisite):
@@ -35,10 +36,10 @@ class HasLimitPrerequisite(MessageRulePrerequisite):
         self.within_period = within_period
         self.sent_messages_repository = sent_messages_repository
 
-    def check(self, user_id: str, period_to: datetime, message_name: str, **kwargs) -> bool:
-        period_from = get_period_from(self.within_period, period_to)
-        period_messages = self.sent_messages_repository.get_messages_by_period(user_id, period_from, period_to)
-        messages_with_type = [msg for msg in period_messages if msg.message == message_name]
+    def check(self, message: str, user_event: UserEventWithSignal) -> bool:
+        period_from = get_period_from(self.within_period, user_event.timestamp)
+        period_messages = self.sent_messages_repository.get_messages_by_period(user_event.user_id, period_from, user_event.timestamp)
+        messages_with_type = [msg for msg in period_messages if msg.message == message]
         return len(messages_with_type) < self.max
 
 

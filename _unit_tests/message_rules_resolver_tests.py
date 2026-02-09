@@ -53,8 +53,8 @@ def event_signal_fixture():
     return UserEventWithSignal(
         user_id="user_1",
         signal="signup_with_marketing",
-        type="signup_completed",
-        timestamp=datetime.utcnow()
+        event_type="signup_completed",
+        event_timestamp=datetime.utcnow()
     )
 
 

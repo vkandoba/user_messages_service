@@ -1,3 +1,4 @@
+import logging
 from message_rules.message_rules_config import MessageRulesConfig, RequiresBefore, HasLimit, Prerequisite
 from message_rules.message_rules_prerequisite import MessageRulePrerequisiteFactory
 from message_send_requests.message_send_request_repository import MessageSendRequestRepositoryBase
@@ -24,7 +25,7 @@ class MessageRulesResolver:
             # TODO: create map signal -> rules
             if rule.on_signal == event_with_signal.signal:
                 if not self._check_prerequisites(rule.message, event_with_signal, rule.prerequisites):
-                    continue
+                    logging.info(f"Skipping {rule.message} because the event doesn't meet the pre-conditions")
 
                 message_to_send = Message(
                     user_id=event_with_signal.user_id,
@@ -48,9 +49,7 @@ class MessageRulesResolver:
 
         for prerequisite_config in prerequisite_configs:
             rule_prerequisite = self.rule_prerequisite_factory.create(prerequisite_config)
-            if not rule_prerequisite.check(
-                    event_signal.user_id, event_signal.timestamp, event_type=event_signal.type, message_name=message_name
-            ):
+            if not rule_prerequisite.check(message_name, event_signal):
                 return False
 
         return True
