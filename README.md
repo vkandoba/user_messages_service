@@ -147,7 +147,7 @@ curl -X GET http://localhost:8000/api/v1/u_12345/audit \
 
 - Each event has the same set of top-level fields, including `properties` and `user_traits`s
 
-- The `properties` field has a stable contract for `event_type == payment_failed' with `amount, `attemp_number` and `failer_reason`
+- The `properties` field has a stable contract for `event_type == payment_failed` with `amount`, `attempt_number` and `failer_reason`
 
 - The attempt_number field is correctly
 
