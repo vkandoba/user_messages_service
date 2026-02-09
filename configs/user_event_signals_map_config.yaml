@@ -3,7 +3,7 @@ user_event_types:
     default_signal: signup
     cases:
       - signal: signup_with_marketing
-        condition: "user_traits.marketing_opt_in == true"
+        condition: "user_traits.marketing_opt_in == True"
 
   link_bank_success:
     default_signal: link_bank_success
