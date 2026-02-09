@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from configs.config_utils import get_period_from
 from user_message_types import Message
 from message_send_requests.message_send_request_repository import MessageSendRequestRepositoryBase
@@ -29,9 +31,10 @@ class MessageSuppressService:
 
         for rule in rules:
             if rule.within_period:
-                period_from = get_period_from(rule.within_period, event.timestamp)
-                messages = self.repo.get_messages_by_period(message.user_id, period_from, event.timestamp)
-                suppress_reason_suffix = f" within period from {period_from} to {event.timestamp}"
+                now = datetime.now(tz=timezone.utc)
+                period_from = get_period_from(rule.within_period, now)
+                messages = self.repo.get_messages_by_period(message.user_id, period_from, now)
+                suppress_reason_suffix = f" within period from {period_from} to {now}"
             else:
                 messages = self.repo.get_messages_by_name(message.user_id, message.name)
                 suppress_reason_suffix = ""

@@ -48,8 +48,9 @@ def test_should_suppress_within_period(message_suppress_service, event, test_mes
     messages_in_period = [MagicMock(message=test_message)] * 3
     message_suppress_service.repo.get_messages_by_period.return_value = messages_in_period
 
-    result = message_suppress_service.should_suppress(event, test_message)
-    assert result == (True, "FORMAT REASON TODO")
+    should_suppress, reason = message_suppress_service.should_suppress(event, test_message)
+    assert should_suppress
+    assert reason.startswith("Message test_message already sent more than 3 times within period from")
 
 
 def test_should_not_suppress_within_period(message_suppress_service, event, test_message):
@@ -64,8 +65,9 @@ def test_should_suppress_by_name(message_suppress_service, event, another_messag
     messages_by_name = [MagicMock(message=another_message)] * 2
     message_suppress_service.repo.get_messages_by_name.return_value = messages_by_name
 
-    result = message_suppress_service.should_suppress(event, another_message)
-    assert result == (True, "FORMAT REASON TODO")
+    should_suppress, reason = message_suppress_service.should_suppress(event, another_message)
+    assert should_suppress
+    assert reason == "Message another_message already sent more than 2 times"
 
 
 def test_should_not_suppress_by_name(message_suppress_service, event, another_message):
