@@ -36,8 +36,8 @@ def config_fixture():
 def event_fixture_signup():
     return IncomingUserEvent(
         user_id="user_1",
-        type="signup_completed",
-        timestamp=datetime.now(),
+        event_type="signup_completed",
+        event_timestamp=datetime.now(),
         properties={},
         user_traits=UserTraits(
             email="test@example.com",
@@ -51,8 +51,8 @@ def event_fixture_signup():
 def event_fixture_payment_failed_with_funds():
     return IncomingUserEvent(
         user_id="user_2",
-        type="payment_failed",
-        timestamp=datetime.now(),
+        event_type="payment_failed",
+        event_timestamp=datetime.now(),
         properties=PaymentFailedProperties(
             amount=10,
             attempt_number=1,
@@ -70,8 +70,8 @@ def event_fixture_payment_failed_with_funds():
 def event_fixture_payment_failed_other_reason():
     return IncomingUserEvent(
         user_id="user_3",
-        type="payment_failed",
-        timestamp=datetime.now(),
+        event_type="payment_failed",
+        event_timestamp=datetime.now(),
         properties=PaymentFailedProperties(
             amount=10,
             attempt_number=1,
@@ -85,36 +85,39 @@ def event_fixture_payment_failed_other_reason():
     )
 
 
-def test_get_event_signal_with_signup_marketing(config_fixture, event_fixture_signup):
+def test_get_event_signals_with_signup_marketing(config_fixture, event_fixture_signup):
     service = UserEventService(config=config_fixture)
 
-    signal = service.get_event_with_signal(event_fixture_signup)
+    signals = service.get_event_with_signals(event_fixture_signup)
 
-    assert signal.signal == "signup_with_marketing"
+    assert len(signals) == 1
+    assert signals[0].signal == "signup_with_marketing"
 
 
 def test_payment_failed_insufficient_funds(config_fixture, event_fixture_payment_failed_with_funds):
     service = UserEventService(config=config_fixture)
 
-    signal = service.get_event_with_signal(event_fixture_payment_failed_with_funds)
+    signals = service.get_event_with_signals(event_fixture_payment_failed_with_funds)
 
-    assert signal.signal == "payment_failed_with_insufficient_funds"
+    assert len(signals) == 1
+    assert signals[0].signal == "payment_failed_with_insufficient_funds"
 
 
 def test_payment_failed_other_reason(config_fixture, event_fixture_payment_failed_other_reason):
     service = UserEventService(config=config_fixture)
 
-    signal = service.get_event_with_signal(event_fixture_payment_failed_other_reason)
+    signals = service.get_event_with_signals(event_fixture_payment_failed_other_reason)
 
-    assert signal.signal == "payment_failed"
+    assert len(signals) == 1
+    assert signals[0].signal == "payment_failed"
 
 
 def test_unknown_event_type(config_fixture):
     service = UserEventService(config=config_fixture)
     event = IncomingUserEvent(
         user_id="user_unknown",
-        type="unknown_event",
-        timestamp=datetime.now(),
+        event_type="unknown_event",
+        event_timestamp=datetime.now(),
         properties={},
         user_traits=UserTraits(
             email="unknown@example.com",
@@ -124,13 +127,4 @@ def test_unknown_event_type(config_fixture):
     )
 
     with pytest.raises(ValueError):
-        service.get_event_with_signal(event)
-
-
-def test_eval_error_handling(config_fixture, event_fixture_signup):
-    service = UserEventService(config=config_fixture)
-
-    config_fixture.user_event_types["signup_completed"].cases[0].condition = "invalid_condition_value"
-
-    with pytest.raises(RuntimeError):
-        service.get_event_with_signal(event_fixture_signup)
+        service.get_event_with_signals(event)

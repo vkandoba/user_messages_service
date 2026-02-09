@@ -23,25 +23,26 @@ class UserMessageService:
 
     def ingest_event(self, user_event: IncomingUserEvent) -> None:
         self._user_event_repo.save(user_event)
-        event_with_signal = self._event_signal_service.get_event_with_signal(user_event)
+        events_with_signal = self._event_signal_service.get_event_with_signals(user_event)
 
-        resolved_messages = self._message_rules_resolver.apply_rules(event_with_signal)
+        for event_with_signal in events_with_signal:
+            resolved_messages = self._message_rules_resolver.apply_rules(event_with_signal)
 
-        for message in resolved_messages:
-            request_status = MessageSendRequestStatus.SENT
-            should_suppress, suppress_reason = self._message_suppress_service.should_suppress(user_event, message)
-            if should_suppress:
-                request_status = MessageSendRequestStatus.SUPPRESSED
+            for message in resolved_messages:
+                request_status = MessageSendRequestStatus.SENT
+                should_suppress, suppress_reason = self._message_suppress_service.should_suppress(user_event, message)
+                if should_suppress:
+                    request_status = MessageSendRequestStatus.SUPPRESSED
 
-            message_request = MessageSendRequest(
-                timestamp=datetime.now(tz=timezone.utc),
-                message=message,
-                status=request_status,
-                suppress_reason=suppress_reason
-            )
-            self._message_request_repo.save(message_request)
-            if message_request.status == MessageSendRequestStatus.SENT:
-                self._message_sender.send(message_request)
+                message_request = MessageSendRequest(
+                    timestamp=datetime.now(tz=timezone.utc),
+                    message=message,
+                    status=request_status,
+                    suppress_reason=suppress_reason
+                )
+                self._message_request_repo.save(message_request)
+                if message_request.status == MessageSendRequestStatus.SENT:
+                    self._message_sender.send(message_request)
 
     def get_audit(self, user_id: str, events_count: int) -> tuple[list[IncomingUserEvent], list[MessageSendRequest]]:
         recent_events = self._user_event_repo.get_recent(user_id, events_count)
